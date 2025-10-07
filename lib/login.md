@@ -106,6 +106,66 @@ python -m login logout
 python -m login status
 ```
 
+新增 CLI 功能：
+
+```bash
+# 以互動方式使用已儲存的會話資料並重新登入（會提示輸入密碼）
+python -m login resume
+
+# 清除儲存的會話資料
+python -m login clear-session
+```
+
+加密化儲存（選用）
+
+`login.py` 支援以環境變數 `VMWARE_SESSION_KEY` 提供的 Fernet key（來自 cryptography 套件）來加密會話 metadata 檔案。若設定該環境變數且系統安裝 `cryptography`，會話會以加密形式儲存在 `~/.vmware_session.json`（實際為二進位 token）；否則會以純文字 JSON 儲存。
+
+產生 key（一次性）並在目前 shell 設定為環境變數：
+
+```bash
+# 產生一組 Fernet key
+python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+# 將輸出貼到環境變數（bash 範例）
+export VMWARE_SESSION_KEY="<the-generated-key>"
+```
+
+注意：
+- 程式不會儲存密碼；`resume` 會提示輸入密碼以重新登入。
+- 若要長期儲存 key，請使用安全的憑證管理工具或 shell 的安全機制；不要把 key 放入版本控制。
+
+會話檔路徑覆寫
+
+預設會話檔案為 `~/.vmware_session.json`。可用環境變數 `VMWARE_SESSION_FILE` 指定不同位置，例如：
+
+```bash
+export VMWARE_SESSION_FILE="/path/to/project/.vmware_session.json"
+```
+
+當 `VMWARE_SESSION_FILE` 與 `VMWARE_SESSION_KEY` 同時設定時，程式會嘗試以 key 解密指定路徑的檔案。
+
+使用 passphrase 派生金鑰（選用）
+
+另一個選項是使用環境變數 `VMWARE_SESSION_PASSPHRASE` 提供的 passphrase，程式會用 PBKDF2（SHA256）和每個會話檔案的隨機 salt 來派生一個 Fernet key。salt 會儲存在同一路徑但附加 `.salt` 副檔名（例如：`~/.vmware_session.json.salt`）。範例：
+
+```bash
+# 設定 passphrase（範例）
+export VMWARE_SESSION_PASSPHRASE='your-long-passphrase'
+
+# 登入（會產生 session file 與 salt）
+python3 lib/login.py login --username ... --password ... --host ...
+
+# 之後可用同一 passphrase 執行 resume
+python3 lib/login.py resume
+```
+
+注意：若使用 passphrase 派生金鑰，請妥善保存你的 passphrase；salt 與會話檔必須同時存在才能解密。
+
+logout 行為
+
+`logout` 現在會在登出時嘗試移除儲存的會話檔與對應的 salt 檔（若存在）。若只想刪除會話檔但保留 salt，可改用 `clear-session` 指令或將檔案手動移除。
+
+
 ---
 
 ## 依賴與環境
