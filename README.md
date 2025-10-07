@@ -1,4 +1,6 @@
-# 這個專案是用python程式來管理VMware虛擬化環境。
+# 本檔案宣告本專案實作的原則，任何的實作請依據檔案的規則實作
+
+## 這個專案是用python程式來管理VMware虛擬化環境。
 
 - 利用VMware提供的Restful API對VMware虛擬化系統操作。
 - 本專案預計操作VMware vSphere 5.5 以後的版本都要相容。
@@ -19,8 +21,10 @@
   每一支函式必須說明輸入參數和輸出參數。
 - 第四部分是console介面實作
 
+## 專案中需要安裝的套件請撰寫在專案目錄的install.md和install.py
+
 ## vmware測試環境(用於測試與驗證)
 
-- hostname=192.168.90.72
-- account=root
-- password=0000000 
+- hostname=192.168.90.73
+- account=administrator@vsphere.local
+- password=!QAZ2wsx
