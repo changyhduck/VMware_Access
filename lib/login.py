@@ -67,6 +67,10 @@ class VCenterSession:
 
         Returns True on success, False on failure.
         """
+        if not HAVE_PYVMOMI or SmartConnect is None or ssl is None:
+            self.status = "登入失敗: pyvmomi (pyVim) 未安裝或匯入失敗，請安裝 pyvmomi 套件。"
+            self.logger.error(self.status)
+            return False
         try:
             context = ssl._create_unverified_context()
             self.si = SmartConnect(
